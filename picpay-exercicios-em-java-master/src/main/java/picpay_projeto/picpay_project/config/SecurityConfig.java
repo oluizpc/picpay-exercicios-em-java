@@ -17,7 +17,7 @@ public class SecurityConfig {
             // libera todas as rotas
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 
-            // 👇 ESSENCIAL para o H2 Console
+            //  ESSENCIAL para o H2 Console
             .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
