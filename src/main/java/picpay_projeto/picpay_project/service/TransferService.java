@@ -1,6 +1,7 @@
 package picpay_projeto.picpay_project.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
@@ -91,5 +92,12 @@ public class TransferService {
         payee.setBalance(payee.getBalance().add(amount));
         userRepository.save(payer);
         userRepository.save(payee);
+    }
+
+
+    public List<TransferResponseDTO> listAllTransfer () {
+        return transferRepository.findAll().stream()
+                .map(TransferResponseDTO::new)
+                .toList();
     }
 }
