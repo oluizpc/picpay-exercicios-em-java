@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,32 +21,30 @@ import lombok.Setter;
 import picpay_projeto.picpay_project.enums.StatusTransfer;
 
 @Entity
+@Table(name = "transfers")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Transfer {
-    
-    @Id 
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private BigDecimal value;
+    @Column(nullable = false, precision = 38, scale = 2)
+    private BigDecimal amount;
 
-    @ManyToOne
-    @JoinColumn(name = "payer_id")
-    @NotNull
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "payer_id", nullable = false)
     private User payer;
 
-    @ManyToOne
-    @JoinColumn(name = "payee_id")
-    @NotNull
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "payee_id", nullable = false)
     private User payee;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusTransfer statusTransfer = StatusTransfer.PENDING;
-
 }

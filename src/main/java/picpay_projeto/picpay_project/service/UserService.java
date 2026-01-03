@@ -36,7 +36,7 @@ public class UserService {
                 .email(userDTO.email())
                 .senha(PasswordUtils.hashPassword(userDTO.senha()))
                 .tipoUsuario(userDTO.tipoUsuario())
-                .balance(BigDecimal.ZERO) // sempre inicializa o saldo com zero
+                .balance(userDTO.balance() != null ? userDTO.balance() : BigDecimal.ZERO) // sempre inicializa o saldo com zero
                 .build();
 
         userRepository.save(user);

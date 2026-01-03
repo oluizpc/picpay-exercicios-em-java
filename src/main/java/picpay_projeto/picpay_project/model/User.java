@@ -36,7 +36,7 @@ public class User {
     private String nomeCompleto;
 
     @Column(nullable = false)
-    private BigDecimal balance = BigDecimal.ZERO;
+    private BigDecimal balance;
 
     @Column(nullable = false, unique = true)
     @Size(min = 11, max = 11)

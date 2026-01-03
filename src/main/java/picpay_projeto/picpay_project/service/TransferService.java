@@ -30,14 +30,14 @@ public class TransferService {
     public TransferResponseDTO createTransfer(TransferRequestDTO transferDTO) {
 
         // 1️. Busca usuários
-        User payer = userRepository.findById(transferDTO.payerId())
+        User payer = userRepository.findById(transferDTO.payer())
                 .orElseThrow(() -> new BusinessException("Payer not found"));
 
-        User payee = userRepository.findById(transferDTO.payeeId())
+        User payee = userRepository.findById(transferDTO.payee())
                 .orElseThrow(() -> new BusinessException("Payee not found"));
 
         // 2. Validações
-        validateTransfer(payer, payee, transferDTO.value());
+        validateTransfer(payer, payee, transferDTO.amount());
 
         // 3. Chama serviço autorizador externo
         boolean authorized = authorizationService.authorize();
@@ -46,11 +46,11 @@ public class TransferService {
         }
 
         // 4. Atualiza saldos
-        updateBalance(payer, payee, transferDTO.value());
+        updateBalance(payer, payee, transferDTO.amount());
 
         // 5. Cria registro da transferência
         Transfer transfer = Transfer.builder()
-                .value(transferDTO.value())
+                .amount(transferDTO.amount())
                 .payer(payer)
                 .payee(payee)
                 .statusTransfer(StatusTransfer.PENDING)
@@ -58,11 +58,11 @@ public class TransferService {
         transferRepository.save(transfer);
 
         // 6. Notifica payee
-        notificationService.notifyPayee(payee, transferDTO.value());
+        notificationService.notifyPayee(payee, transferDTO.amount());
 
         // 7. Retorna DTO
         return new TransferResponseDTO(
-                transfer.getValue(),
+                transfer.getAmount(),
                 transfer.getPayer().getNomeCompleto(),
                 transfer.getPayee().getNomeCompleto(),
                 transfer.getStatusTransfer()
@@ -70,8 +70,8 @@ public class TransferService {
     }
 
     // Método privado para validações
-    private void validateTransfer(User payer, User payee, BigDecimal value) {
-        if (value.compareTo(BigDecimal.ZERO) <= 0) {
+    private void validateTransfer(User payer, User payee, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new UnauthorizedTransferException("The transfer amount must be greater than zero!");
         }
         if (payer.getTipoUsuario() != TipoUsuario.COMUM) {
@@ -80,15 +80,15 @@ public class TransferService {
         if (payer.getId().equals(payee.getId())) {
             throw new UnauthorizedTransferException("Cannot transfer to yourself");
         }
-        if (value.compareTo(payer.getBalance()) > 0) {
-            throw new InsufficientBalanceException("The transfer value is greater than your balance");
+        if (amount.compareTo(payer.getBalance()) > 0) {
+            throw new InsufficientBalanceException("The transfer amount is greater than your balance");
         }
     }
 
     // Método privado para atualizar saldo
-    private void updateBalance(User payer, User payee, BigDecimal value) {
-        payer.setBalance(payer.getBalance().subtract(value));
-        payee.setBalance(payee.getBalance().add(value));
+    private void updateBalance(User payer, User payee, BigDecimal amount) {
+        payer.setBalance(payer.getBalance().subtract(amount));
+        payee.setBalance(payee.getBalance().add(amount));
         userRepository.save(payer);
         userRepository.save(payee);
     }
